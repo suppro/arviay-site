@@ -1,5 +1,5 @@
 <?php
-
+// app/Http/Controllers/Auth/LoginController.php
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -20,24 +20,27 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Находим пользователя по логину
         $user = \App\Models\User::where('login', $request->login)->first();
 
-        // Проверяем пользователя и пароль
         if ($user && Hash::check($request->password, $user->password_hash)) {
             
-            // ПРОСТАЯ АУТЕНТИФИКАЦИЯ ЧЕРЕЗ СЕССИЮ
-            session(['user_id' => $user->id]);
-            session(['user_name' => $user->name]);
-            session(['user_login' => $user->login]);
-            
-            // Проверяем запись в сессию
-            \Log::info('Session auth', [
-                'session_user_id' => session('user_id'),
-                'session_id' => session()->getId()
+            // Сохраняем все данные пользователя в сессию
+            session([
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_login' => $user->login,
+                'user_role' => $user->role_id,
+                'user_email' => $user->email,
+                'user_phone' => $user->phone,
+                'user_address' => $user->address
             ]);
 
-            return redirect()->route('dashboard');
+            // Редирект в зависимости от роли
+            if ($user->role_id === 1) {
+                return redirect()->route('admin.dashboard');
+            } else {
+                return redirect()->route('dashboard');
+            }
         }
 
         return back()->withErrors([
@@ -47,11 +50,12 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        // Очищаем сессию
-        session()->forget(['user_id', 'user_name', 'user_login']);
+        session()->forget([
+            'user_id', 'user_name', 'user_login', 'user_role', 
+            'user_email', 'user_phone', 'user_address'
+        ]);
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
         return redirect('/');
     }
 }

@@ -3,42 +3,34 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
-class User extends Model implements AuthenticatableContract
+class User extends Model
 {
-    use Authenticatable;
-
     protected $table = 'User';
-    public $timestamps = false;
-
+    
     protected $fillable = [
-        'name', 'phone', 'email', 'address', 'login', 'password_hash', 'role_id'
+        'name', 'phone', 'email', 'login', 'password_hash', 'address', 'role_id'
     ];
-
-    protected $hidden = ['password_hash'];
-
-    // Критически важно — Laravel будет использовать login как имя пользователя
-    public function getAuthIdentifierName()
-    {
-        return 'login';
-    }
-
-    // Laravel будет брать готовый хеш из password_hash (не будет хешировать заново)
-    public function getAuthPassword()
-    {
-        return $this->password_hash;
-    }
-
-    // Связь с ролью
+    
+    public $timestamps = false;
+    
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
     }
-
+    
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id');
+    }
+    
     public function isAdmin()
     {
-        return $this->role_id == 1;
+        return $this->role_id === 1;
+    }
+    
+    public function isClient()
+    {
+        return $this->role_id === 2;
     }
 }

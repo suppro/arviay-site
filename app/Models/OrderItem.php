@@ -18,4 +18,16 @@ class OrderItem extends Model
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
+    
+    public function product()
+    {
+        return $this->hasOneThrough(
+            Product::class,
+            ProductVariant::class,
+            'id', // Foreign key on ProductVariant table
+            'id', // Foreign key on Product table
+            'product_variant_id', // Local key on OrderItem table
+            'product_id' // Local key on ProductVariant table
+        );
+    }
 }

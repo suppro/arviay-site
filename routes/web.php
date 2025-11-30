@@ -24,14 +24,20 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
 });
 
-// === Dashboard для авторизованных ===
+// === Dashboard для клиентов ===
 Route::get('/dashboard', function () {
-    // Простая проверка сессии
     if (!session('user_id')) {
         return redirect()->route('login');
     }
     return view('dashboard');
 })->name('dashboard');
+
+// === Админка ===
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/orders', [App\Http\Controllers\Admin\AdminController::class, 'orders'])->name('orders');
+    Route::post('/orders/{order}/status', [App\Http\Controllers\Admin\AdminController::class, 'updateOrderStatus'])->name('orders.status');
+});
 
 // === Корзина и заказы ===
 Route::get('/cart', [CartController::class, 'index'])->name('cart');
@@ -44,9 +50,4 @@ Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
 Route::post('/order/create', [OrderController::class, 'store'])->name('order.create');
 Route::get('/orders', [OrderController::class, 'index'])->name('orders');
 
-// === Админка ===
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/orders', [OrderAdminController::class, 'index'])->name('orders');
-    Route::post('/orders/{order}/status', [OrderAdminController::class, 'updateStatus'])->name('orders.status');
-});
 

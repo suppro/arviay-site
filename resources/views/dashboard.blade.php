@@ -9,35 +9,43 @@
 <body class="bg-gray-100 font-sans">
 
     <!-- Шапка -->
-    <header class="bg-red-600 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="{{ route('dashboard') }}" class="text-3xl font-bold">Вжух! Пицца</a>
-            <div class="flex items-center gap-6">
-                @if(session('user_id'))
-                    <span class="hidden md:block">Привет, {{ session('user_name') }}!</span>
-                    <a href="{{ route('cart') }}" class="bg-white text-red-600 px-5 py-2 rounded-lg font-bold hover:bg-gray-100 relative">
-                        Корзина
-                        @if(session('cart') && collect(session('cart'))->count())
-                            <span class="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs rounded-full w-6 h-6 flex items-center justify-center">
-                                {{ collect(session('cart'))->sum('quantity') }}
-                            </span>
-                        @endif
-                    </a>
-                    <a href="{{ route('orders') }}" class="bg-white text-red-600 px-5 py-2 rounded-lg font-bold hover:bg-gray-100">
-                        Мои заказы
-                    </a>
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button class="bg-white text-red-600 px-5 py-2 rounded-lg font-bold hover:bg-gray-100">Выйти</button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="bg-white text-red-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100">
-                        Войти
+<header class="bg-red-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="{{ route('dashboard') }}" class="text-3xl font-bold">Вжух! Пицца</a>
+        <div class="flex items-center gap-6">
+            @if(session('user_id'))
+                <span class="hidden md:block">Привет, {{ session('user_name') }}!</span>
+                
+                <!-- ЕСЛИ АДМИН - ПОКАЗЫВАЕМ ССЫЛКУ В АДМИНКУ -->
+                @if(session('user_role') == 1)
+                    <a href="{{ route('admin.dashboard') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">
+                        Админ-панель
                     </a>
                 @endif
-            </div>
+                
+                <a href="{{ route('cart') }}" class="bg-white text-red-600 px-5 py-2 rounded-lg font-bold hover:bg-gray-100 relative">
+                    Корзина
+                    @if(session('cart') && collect(session('cart'))->count())
+                        <span class="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                            {{ collect(session('cart'))->sum('quantity') }}
+                        </span>
+                    @endif
+                </a>
+                <a href="{{ route('orders') }}" class="bg-white text-red-600 px-5 py-2 rounded-lg font-bold hover:bg-gray-100">
+                    Мои заказы
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button class="bg-white text-red-600 px-5 py-2 rounded-lg font-bold hover:bg-gray-100">Выйти</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="bg-white text-red-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100">
+                    Войти
+                </a>
+            @endif
         </div>
-    </header>
+    </div>
+</header>
 
     <!-- Приветствие -->
     <main class="container mx-auto px-4 py-12">

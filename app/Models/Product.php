@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -7,11 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $table = 'Product';
-    
-    protected $fillable = [
-        'category_id', 'name', 'description', 'image', 'is_active'
-    ];
-    
+    protected $fillable = ['category_id', 'name', 'description', 'image', 'is_active'];
     public $timestamps = false;
     
     public function category()
@@ -22,5 +17,10 @@ class Product extends Model
     public function variants()
     {
         return $this->hasMany(ProductVariant::class, 'product_id');
+    }
+    
+    public function ingredients()
+    {
+        return $this->belongsToMany(Ingredient::class, 'product_ingredient', 'product_id', 'ingredient_id');
     }
 }

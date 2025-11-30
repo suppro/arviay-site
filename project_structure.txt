@@ -4,34 +4,23 @@ pizza-site/
 ├── .env.example
 ├── .gitattributes
 ├── .gitignore
+├── Gemini_Generated_Image_jze6s3jze6s3jze6.jpg
+├── Gemini_Generated_Image_n0d8xmn0d8xmn0d8.jpg
+├── Gemini_Generated_Image_p6m2s8p6m2s8p6m2.jpg
 ├── README.md
 ├── app
 │   ├── Http
-│   │   ├── Controllers
-│   │   │   ├── Admin
-│   │   │   │   ├── AdminController.php
-│   │   │   │   └── OrderAdminController.php
-│   │   │   ├── Auth
-│   │   │   │   ├── AuthenticatedSessionController.php
-│   │   │   │   ├── ConfirmablePasswordController.php
-│   │   │   │   ├── EmailVerificationNotificationController.php
-│   │   │   │   ├── EmailVerificationPromptController.php
-│   │   │   │   ├── LoginController.php
-│   │   │   │   ├── NewPasswordController.php
-│   │   │   │   ├── PasswordController.php
-│   │   │   │   ├── PasswordResetLinkController.php
-│   │   │   │   ├── RegisterController.php
-│   │   │   │   ├── RegisteredUserController.php
-│   │   │   │   └── VerifyEmailController.php
-│   │   │   ├── CartController.php
-│   │   │   ├── Controller.php
-│   │   │   ├── OrderController.php
-│   │   │   ├── ProfileController.php
-│   │   │   └── RegisterController.php
-│   │   └── Requests
+│   │   └── Controllers
+│   │       ├── Admin
+│   │       │   ├── AdminController.php
+│   │       │   └── OrderAdminController.php
 │   │       ├── Auth
-│   │       │   └── LoginRequest.php
-│   │       └── ProfileUpdateRequest.php
+│   │       │   ├── LoginController.php
+│   │       │   └── RegisterController.php
+│   │       ├── CartController.php
+│   │       ├── Controller.php
+│   │       ├── OrderController.php
+│   │       └── RegisterController.php
 │   ├── Models
 │   │   ├── Category.php
 │   │   ├── Ingredient.php
@@ -46,10 +35,6 @@ pizza-site/
 │   ├── Providers
 │   │   └── AppServiceProvider.php
 │   └── View
-│       └── Components
-│           ├── AppLayout.php
-│           ├── GuestLayout.php
-│           └── Header.php
 ├── artisan
 ├── bootstrap
 │   ├── app.php
@@ -96,19 +81,30 @@ pizza-site/
 ├── package.json
 ├── phpunit.xml
 ├── postcss.config.js
+├── project_structure.txt
 ├── public
 │   ├── .htaccess
 │   ├── Images
+│   │   ├── chicken_nuggets.jpg
+│   │   ├── chicken_wings.jpg
 │   │   ├── cola.jpg
 │   │   ├── cola.png
 │   │   ├── cola1l.jpg
 │   │   ├── cola1l.png
+│   │   ├── fanta_orange.jpg
+│   │   ├── four_cheese.jpg
+│   │   ├── french_fries.jpg
+│   │   ├── garlic_bread.jpg
 │   │   ├── hawaiian.jpg
 │   │   ├── hawaiian.png
+│   │   ├── ice_cream.jpg
 │   │   ├── ma.png
 │   │   ├── margherita.jpg
+│   │   ├── ny_cheesecake.jpg
 │   │   ├── pepperoni.jpg
-│   │   └── pepperoni.jpg.png
+│   │   ├── pepperoni.jpg.png
+│   │   ├── sprite_lemonlime.jpg
+│   │   └── tiramisu.jpg
 │   ├── build
 │   │   ├── assets
 │   │   │   ├── app-C9BXtK88.css
@@ -127,43 +123,15 @@ pizza-site/
 │   └── views
 │       ├── admin
 │       │   ├── dashboard.blade.php
+│       │   ├── order-detail.blade.php
 │       │   └── orders.blade.php
 │       ├── auth
-│       │   ├── confirm-password.blade.php
-│       │   ├── forgot-password.blade.php
 │       │   ├── login.blade.php
-│       │   ├── register.blade.php
-│       │   ├── reset-password.blade.php
-│       │   └── verify-email.blade.php
+│       │   └── register.blade.php
 │       ├── cart.blade.php
 │       ├── checkout.blade.php
-│       ├── components
-│       │   ├── application-logo.blade.php
-│       │   ├── auth-session-status.blade.php
-│       │   ├── danger-button.blade.php
-│       │   ├── dropdown-link.blade.php
-│       │   ├── dropdown.blade.php
-│       │   ├── header.blade.php
-│       │   ├── input-error.blade.php
-│       │   ├── input-label.blade.php
-│       │   ├── modal.blade.php
-│       │   ├── nav-link.blade.php
-│       │   ├── primary-button.blade.php
-│       │   ├── responsive-nav-link.blade.php
-│       │   ├── secondary-button.blade.php
-│       │   └── text-input.blade.php
 │       ├── dashboard.blade.php
-│       ├── layouts
-│       │   ├── app.blade.php
-│       │   ├── guest.blade.php
-│       │   └── navigation.blade.php
 │       ├── orders.blade.php
-│       ├── profile
-│       │   ├── edit.blade.php
-│       │   └── partials
-│       │       ├── delete-user-form.blade.php
-│       │       ├── update-password-form.blade.php
-│       │       └── update-profile-information-form.blade.php
 │       └── welcome.blade.php
 ├── routes
 │   ├── auth.php
@@ -172,18 +140,4 @@ pizza-site/
 ├── structure.php
 ├── structure.txt
 ├── tailwind.config.js
-├── tests
-│   ├── Feature
-│   │   ├── Auth
-│   │   │   ├── AuthenticationTest.php
-│   │   │   ├── EmailVerificationTest.php
-│   │   │   ├── PasswordConfirmationTest.php
-│   │   │   ├── PasswordResetTest.php
-│   │   │   ├── PasswordUpdateTest.php
-│   │   │   └── RegistrationTest.php
-│   │   ├── ExampleTest.php
-│   │   └── ProfileTest.php
-│   ├── TestCase.php
-│   └── Unit
-│       └── ExampleTest.php
 └── vite.config.js

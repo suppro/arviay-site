@@ -93,53 +93,53 @@
         </div>
 
         <!-- Последние заказы -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <h2 class="text-2xl font-bold mb-6">Последние заказы</h2>
-            
-            @if($recent_orders->count() > 0)
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="text-left py-3 px-4">ID</th>
-                                <th class="text-left py-3 px-4">Клиент</th>
-                                <th class="text-left py-3 px-4">Статус</th>
-                                <th class="text-left py-3 px-4">Сумма</th>
-                                <th class="text-left py-3 px-4">Дата</th>
-                                <th class="text-left py-3 px-4">Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($recent_orders as $order)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="py-3 px-4">#{{ $order->id }}</td>
-                                <td class="py-3 px-4">{{ $order->user->name }}</td>
-                                <td class="py-3 px-4">
-                                    <span class="px-2 py-1 rounded-full text-xs font-medium
-                                        @if($order->status_id == 1) bg-yellow-100 text-yellow-800
-                                        @elseif($order->status_id == 5) bg-green-100 text-green-800
-                                        @elseif($order->status_id == 6) bg-red-100 text-red-800
-                                        @else bg-blue-100 text-blue-800 @endif">
-                                        {{ $order->status->name }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4">{{ $order->total_price }} ₽</td>
-                                <td class="py-3 px-4">{{ $order->created_at }}</td>
-                                <td class="py-3 px-4">
-                                    <a href="{{ route('admin.orders') }}?highlight={{ $order->id }}" 
-                                       class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                        Подробнее
-                                    </a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <p class="text-gray-600 text-center py-8">Заказов пока нет</p>
-            @endif
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <h2 class="text-2xl font-bold mb-6">Последние заказы</h2>
+    
+    @if($recent_orders->count() > 0)
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b">
+                        <th class="text-left py-3 px-4">ID</th>
+                        <th class="text-left py-3 px-4">Клиент</th>
+                        <th class="text-left py-3 px-4">Статус</th>
+                        <th class="text-left py-3 px-4">Сумма</th>
+                        <th class="text-left py-3 px-4">Дата</th>
+                        <th class="text-left py-3 px-4">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($recent_orders as $order)
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 px-4">#{{ $order->id }}</td>
+                        <td class="py-3 px-4">{{ $order->user->name }}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium
+                                @if($order->status_id == 1) bg-yellow-100 text-yellow-800
+                                @elseif($order->status_id == 5) bg-green-100 text-green-800
+                                @elseif($order->status_id == 6) bg-red-100 text-red-800
+                                @else bg-blue-100 text-blue-800 @endif">
+                                {{ $order->status->name }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">{{ $order->total_price }} ₽</td>
+                        <td class="py-3 px-4">{{ date('d.m.Y H:i', strtotime($order->created_at)) }}</td>
+                        <td class="py-3 px-4">
+                            <a href="{{ route('admin.order.detail', $order->id) }}" 
+                               class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                Подробнее
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
+    @else
+        <p class="text-gray-600 text-center py-8">Заказов пока нет</p>
+    @endif
+</div>
     </div>
 </body>
 </html>

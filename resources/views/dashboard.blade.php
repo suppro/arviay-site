@@ -58,7 +58,7 @@
             <!-- Меню -->
             <h2 class="text-4xl font-bold text-center mb-12">Наше меню</h2>
 
-            @foreach(\App\Models\Category::all() as $category)
+            @foreach(\App\Models\Category::orderByRaw("FIELD(name, 'Пицца', 'Закуски', 'Десерты', 'Напитки')")->get() as $category)
                 <section class="mb-16">
                     <h3 class="text-3xl font-semibold mb-8 text-red-600">{{ $category->name }}</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -77,21 +77,33 @@
                                     <h4 class="text-2xl font-bold mb-2">{{ $product->name }}</h4>
                                     <p class="text-gray-600 mb-4">{{ $product->description }}</p>
 
-                                    <form action="{{ route('cart.add') }}" method="POST" class="flex items-center gap-4">
-                                        @csrf
-                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                        <select name="variant_id" class="border rounded-lg px-3 py-2" required>
-                                            @foreach($product->variants as $variant)
-                                                <option value="{{ $variant->id }}">
-                                                    {{ $variant->size_name }} — {{ $variant->price }} ₽
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <button type="submit"
-                                                class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold">
-                                            В корзину
-                                        </button>
-                                    </form>
+                                    @if($product->variants->count() > 0)
+                                        <form action="{{ route('cart.add') }}" method="POST" class="flex items-center gap-4">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                            
+                                            @if($product->variants->count() > 1)
+                                                <!-- Если больше одного варианта - показываем выпадающий список -->
+                                                <select name="variant_id" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+                                                    @foreach($product->variants as $variant)
+                                                        <option value="{{ $variant->id }}">
+                                                            {{ $variant->size_name }} — {{ $variant->price }} ₽
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            @else
+                                                <!-- Если только один вариант - скрытое поле -->
+                                                <input type="hidden" name="variant_id" value="{{ $product->variants->first()->id }}">
+                                            @endif
+                                            
+                                            <button type="submit"
+                                                    class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold whitespace-nowrap">
+                                                В корзину
+                                            </button>
+                                        </form>
+                                    @else
+                                        <p class="text-sm text-gray-500 text-center">Товар временно недоступен</p>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach

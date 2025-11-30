@@ -16,7 +16,7 @@
                 <a href="{{ route('register') }}" class="text-white hover:text-gray-200 font-medium">
                     Регистрация
                 </a>
-                <<a href="{{ route('login') }}" class="bg-white text-red-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100">
+                <a href="{{ route('login') }}" class="bg-white text-red-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100">
                     Войти
                 </a>
             </div>
@@ -38,7 +38,7 @@
     <main class="container mx-auto px-4 py-12">
         <h2 class="text-4xl font-bold text-center mb-12">Наше меню</h2>
 
-        @foreach(\App\Models\Category::all() as $category)
+        @foreach(\App\Models\Category::orderByRaw("FIELD(name, 'Пицца', 'Закуски', 'Десерты', 'Напитки')")->get() as $category)
             <section class="mb-16">
                 <h3 class="text-3xl font-semibold mb-8 text-red-600">{{ $category->name }}</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -67,14 +67,6 @@
                             <a href="{{ route('register') }}" class="text-red-600 hover:text-red-500 font-medium">Зарегистрируйтесь</a>
                         </p>
                     </div>
-
-                    <!-- Тестовые данные -->
-                    <div class="mt-6 p-4 bg-gray-100 rounded-md">
-                        <p class="text-sm text-gray-600 text-center">
-                            <strong>Тестовый аккаунт:</strong><br>
-                            Логин: admin<br>
-                            Пароль: admin123
-                        </p>
                     </div>
                 </form>
             </div>

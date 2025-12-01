@@ -86,19 +86,13 @@
                     <div>
                         <span class="font-medium text-gray-700">Способ оплаты:</span>
                         <span class="ml-2">
-                            @if($order->payment_method == 'cash') Наличными при получении
-                            @elseif($order->payment_method == 'card') Банковской картой
-                            @elseif($order->payment_method == 'transfer') Банковский перевод
-                            @else {{ $order->payment_method }} @endif
+                            {{ \App\Helpers\OrderHelper::getPaymentMethodLabel($order->payment_method) }}
                         </span>
                     </div>
                     <div>
                         <span class="font-medium text-gray-700">Способ доставки:</span>
                         <span class="ml-2">
-                            @if($order->delivery_method == 'pickup') Самовывоз
-                            @elseif($order->delivery_method == 'courier') Курьерская доставка
-                            @elseif($order->delivery_method == 'transport') Транспортная компания
-                            @else {{ $order->delivery_method }} @endif
+                            {{ \App\Helpers\OrderHelper::getDeliveryMethodLabel($order->delivery_method) }}
                         </span>
                     </div>
                     @if(isset($order->customer_details['comment']) && $order->customer_details['comment'])

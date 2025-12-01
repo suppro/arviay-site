@@ -48,10 +48,14 @@ class OrderController extends Controller
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
             'delivery_address' => 'required|string|max:500',
-            'payment_method' => 'required|in:cash,card,transfer',
-            'delivery_method' => 'required|in:pickup,courier,transport',
+            'payment_method' => 'required|in:cash,card,transfer,cash_on_delivery,credit_card,bank_transfer',
+            'delivery_method' => 'required|in:pickup,courier,transport,express_delivery,standard_delivery',
             'comment' => 'nullable|string|max:1000'
         ]);
+        
+        // Нормализуем значения для сохранения в новом формате
+        $paymentMethod = \App\Helpers\OrderHelper::normalizePaymentMethod($request->payment_method);
+        $deliveryMethod = \App\Helpers\OrderHelper::normalizeDeliveryMethod($request->delivery_method);
 
         // Проверяем наличие товаров и считаем сумму
         $totalAmount = 0;
@@ -94,8 +98,8 @@ class OrderController extends Controller
             'user_id' => auth()->id(),
             'status' => 'new',
             'total_amount' => $totalAmount,
-            'payment_method' => $request->payment_method,
-            'delivery_method' => $request->delivery_method,
+            'payment_method' => $paymentMethod,
+            'delivery_method' => $deliveryMethod,
             'customer_details' => $customerDetails,
             'is_synced_to_1c' => false
         ]);

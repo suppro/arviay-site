@@ -6,28 +6,33 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    protected $table = 'OrderItem';
-    
     protected $fillable = [
-        'order_id', 'product_variant_id', 'quantity', 'price_at_moment'
+        'order_id',
+        'product_id',
+        'product_name',
+        'product_sku',
+        'price_at_purchase',
+        'quantity',
     ];
     
-    public $timestamps = false;
+    protected $casts = [
+        'price_at_purchase' => 'decimal:2',
+        'quantity' => 'integer',
+    ];
     
-    public function variant()
+    public function order()
     {
-        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        return $this->belongsTo(Order::class, 'order_id');
     }
     
     public function product()
     {
-        return $this->hasOneThrough(
-            Product::class,
-            ProductVariant::class,
-            'id', // Foreign key on ProductVariant table
-            'id', // Foreign key on Product table
-            'product_variant_id', // Local key on OrderItem table
-            'product_id' // Local key on ProductVariant table
-        );
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+    
+    // Получить общую стоимость позиции
+    public function getTotalAttribute()
+    {
+        return $this->price_at_purchase * $this->quantity;
     }
 }

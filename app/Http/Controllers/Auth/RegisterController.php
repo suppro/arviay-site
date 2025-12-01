@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -19,12 +20,10 @@ class RegisterController extends Controller
     {
         // Валидация
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:100',
-            'phone' => 'required|string|max:20|unique:User,phone',
-            'email' => 'nullable|email|max:100|unique:User,email',
-            'login' => 'required|string|max:50|unique:User,login',
-            'password' => 'required|string|min:6|confirmed',
-            'address' => 'nullable|string|max:200'
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         if ($validator->fails()) {
@@ -36,16 +35,12 @@ class RegisterController extends Controller
             'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,
-            'login' => $request->login,
-            'password_hash' => Hash::make($request->password),
-            'address' => $request->address,
-            'role_id' => 2 // Клиент
+            'password' => Hash::make($request->password),
+            'role' => 'client' // Клиент по умолчанию
         ]);
 
         // Автоматически входим после регистрации
-        session(['user_id' => $user->id]);
-        session(['user_name' => $user->name]);
-        session(['user_login' => $user->login]);
+        Auth::login($user);
 
         return redirect()->route('dashboard')->with('success', 'Регистрация успешна! Добро пожаловать!');
     }

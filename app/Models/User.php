@@ -2,21 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class User extends Model
+class User extends Authenticatable
 {
-    protected $table = 'User';
-    
+    use HasFactory, Notifiable;
+
     protected $fillable = [
-        'name', 'phone', 'email', 'login', 'password_hash', 'address', 'role_id'
+        'name',
+        'email',
+        'password',
+        'phone',
+        'role',
     ];
-    
-    public $timestamps = false;
-    
-    public function role()
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected function casts(): array
     {
-        return $this->belongsTo(Role::class, 'role_id');
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
     
     public function orders()
@@ -26,11 +38,11 @@ class User extends Model
     
     public function isAdmin()
     {
-        return $this->role_id === 1;
+        return $this->role === 'admin';
     }
     
     public function isClient()
     {
-        return $this->role_id === 2;
+        return $this->role === 'client';
     }
 }

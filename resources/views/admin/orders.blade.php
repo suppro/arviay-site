@@ -7,7 +7,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Управление заказами — Вжух! Пицца</title>
+    <title>Управление заказами — АО «Арвиай»</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 font-sans antialiased">
@@ -16,7 +16,7 @@
         <div class="container mx-auto px-4 py-5 flex justify-between items-center">
             <div class="flex items-center gap-6">
                 <a href="{{ route('admin.dashboard') }}" class="text-3xl font-extrabold tracking-tight hover:scale-105 transition-transform duration-200">
-                    ⚙️ Вжух! Админ
+                    ⚙️ АО «Арвиай» — Админ
                 </a>
                 <nav class="hidden md:flex items-center gap-4">
                     <a href="{{ route('admin.dashboard') }}" class="hover:text-blue-200 font-semibold transition-colors">Дашборд</a>
@@ -24,7 +24,7 @@
                 </nav>
             </div>
             <div class="flex items-center gap-4">
-                <span class="hidden md:block text-blue-100 font-semibold">Админ: {{ session('user_name') }}</span>
+                <span class="hidden md:block text-blue-100 font-semibold">Админ: {{ auth()->user()->name ?? 'Администратор' }}</span>
                 <a href="{{ route('dashboard') }}" class="bg-white text-blue-600 px-4 py-2.5 rounded-xl font-bold hover:bg-blue-50 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
                     Клиентская часть
                 </a>
@@ -58,10 +58,9 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Статус заказа</label>
                     <select name="status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium transition-all">
-                        <option value="all">Все статусы</option>
-                        @foreach($statuses as $status)
-                            <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>
-                                {{ $status->name }}
+                        @foreach($statuses as $key => $label)
+                            <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
@@ -107,10 +106,12 @@
                                     <div class="text-sm text-gray-500 font-medium">{{ $order->items->count() }} товаров</div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="font-bold">{{ $order->user->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $order->user->email }}</div>
+                                    <div class="font-bold">{{ $order->customer_name }}</div>
+                                    @if($order->user)
+                                        <div class="text-sm text-gray-500">{{ $order->user->email }}</div>
+                                    @endif
                                 </td>
-                                <td class="px-6 py-4 font-semibold">{{ $order->user->phone }}</td>
+                                <td class="px-6 py-4 font-semibold">{{ $order->customer_phone ?? '—' }}</td>
                                 <td class="px-6 py-4">
                                     <div class="max-w-xs truncate font-medium" title="{{ $order->delivery_address }}">
                                         {{ $order->delivery_address }}
@@ -119,22 +120,22 @@
                                 <td class="px-6 py-4">
                                     <form action="{{ route('admin.orders.status', $order->id) }}" method="POST" class="inline">
                                         @csrf
-                                        <select name="status_id" 
+                                        <select name="status" 
                                                 onchange="this.form.submit()"
                                                 class="text-sm border-2 rounded-xl px-3 py-2 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all
-                                                    @if($order->status_id == 1) bg-yellow-100 text-yellow-800 border-yellow-300
-                                                    @elseif($order->status_id == 5) bg-green-100 text-green-800 border-green-300
-                                                    @elseif($order->status_id == 6) bg-red-100 text-red-800 border-red-300
+                                                    @if($order->status == 'new') bg-yellow-100 text-yellow-800 border-yellow-300
+                                                    @elseif($order->status == 'completed') bg-green-100 text-green-800 border-green-300
+                                                    @elseif($order->status == 'cancelled') bg-red-100 text-red-800 border-red-300
                                                     @else bg-blue-100 text-blue-800 border-blue-300 @endif">
-                                            @foreach($statuses as $status)
-                                                <option value="{{ $status->id }}" {{ $order->status_id == $status->id ? 'selected' : '' }}>
-                                                    {{ $status->name }}
+                                            @foreach($statuses as $key => $label)
+                                                <option value="{{ $key }}" {{ $order->status == $key ? 'selected' : '' }}>
+                                                    {{ $label }}
                                                 </option>
                                             @endforeach
                                         </select>
                                     </form>
                                 </td>
-                                <td class="px-6 py-4 font-extrabold text-lg">{{ number_format($order->total_price, 0, ',', ' ') }} ₽</td>
+                                <td class="px-6 py-4 font-extrabold text-lg">{{ number_format($order->total_amount, 0, ',', ' ') }} ₽</td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-semibold">{{ date('d.m.Y', strtotime($order->created_at)) }}</div>
                                     <div class="text-xs text-gray-500">{{ date('H:i', strtotime($order->created_at)) }}</div>
@@ -160,21 +161,19 @@
         </div>
 
         <!-- Статистика по статусам -->
-        <div class="mt-12 grid grid-cols-2 md:grid-cols-6 gap-6">
+        <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
             @php
                 $statusStats = [
-                    1 => ['name' => 'Новые', 'color' => 'from-yellow-400 to-yellow-500'],
-                    2 => ['name' => 'Приняты', 'color' => 'from-blue-400 to-blue-500'],
-                    3 => ['name' => 'Готовятся', 'color' => 'from-purple-400 to-purple-500'],
-                    4 => ['name' => 'В доставке', 'color' => 'from-indigo-400 to-indigo-500'],
-                    5 => ['name' => 'Доставлены', 'color' => 'from-green-400 to-green-500'],
-                    6 => ['name' => 'Отменены', 'color' => 'from-red-400 to-red-500'],
+                    'new' => ['name' => 'Новые', 'color' => 'from-yellow-400 to-yellow-500'],
+                    'processing' => ['name' => 'В обработке', 'color' => 'from-blue-400 to-blue-500'],
+                    'completed' => ['name' => 'Выполненные', 'color' => 'from-green-400 to-green-500'],
+                    'cancelled' => ['name' => 'Отмененные', 'color' => 'from-red-400 to-red-500'],
                 ];
             @endphp
             
-            @foreach($statusStats as $id => $stat)
+            @foreach($statusStats as $status => $stat)
                 @php
-                    $count = Order::where('status_id', $id)->count();
+                    $count = Order::where('status', $status)->count();
                 @endphp
                 <div class="bg-white rounded-2xl shadow-xl p-6 text-center border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                     <div class="bg-gradient-to-br {{ $stat['color'] }} w-16 h-16 rounded-2xl flex items-center justify-center text-white font-extrabold text-2xl mx-auto mb-3 shadow-lg">

@@ -6,19 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $table = 'Order';
-    
     protected $fillable = [
-        'user_id', 'status_id', 'delivery_address', 'comment', 'total_price'
+        'user_id',
+        'status',
+        'total_amount',
+        'payment_method',
+        'delivery_method',
+        'customer_details',
+        'is_synced_to_1c',
     ];
     
-    public $timestamps = false;
-    
-    // ОТНОШЕНИЯ
-    public function status()
-    {
-        return $this->belongsTo(Status::class, 'status_id');
-    }
+    protected $casts = [
+        'total_amount' => 'decimal:2',
+        'customer_details' => 'array',
+        'is_synced_to_1c' => 'boolean',
+    ];
     
     public function user()
     {
@@ -28,5 +30,44 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class, 'order_id');
+    }
+    
+    // Получить имя клиента из customer_details
+    public function getCustomerNameAttribute()
+    {
+        return $this->customer_details['name'] ?? ($this->user ? $this->user->name : 'Гость');
+    }
+    
+    // Получить телефон клиента из customer_details
+    public function getCustomerPhoneAttribute()
+    {
+        return $this->customer_details['phone'] ?? ($this->user ? $this->user->phone : null);
+    }
+    
+    // Получить адрес доставки из customer_details
+    public function getDeliveryAddressAttribute()
+    {
+        return $this->customer_details['address'] ?? null;
+    }
+    
+    // Проверка статуса
+    public function isNew()
+    {
+        return $this->status === 'new';
+    }
+    
+    public function isProcessing()
+    {
+        return $this->status === 'processing';
+    }
+    
+    public function isCompleted()
+    {
+        return $this->status === 'completed';
+    }
+    
+    public function isCancelled()
+    {
+        return $this->status === 'cancelled';
     }
 }

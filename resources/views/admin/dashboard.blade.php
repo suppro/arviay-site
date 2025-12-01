@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Админ-панель — Вжух! Пицца</title>
+    <title>Админ-панель — АО «Арвиай»</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 font-sans antialiased">
@@ -12,7 +12,7 @@
         <div class="container mx-auto px-4 py-5 flex justify-between items-center">
             <div class="flex items-center gap-6">
                 <a href="{{ route('admin.dashboard') }}" class="text-3xl font-extrabold tracking-tight hover:scale-105 transition-transform duration-200">
-                    ⚙️ Вжух! Админ
+                    ⚙️ АО «Арвиай» — Админ
                 </a>
                 <nav class="hidden md:flex items-center gap-4">
                     <a href="{{ route('admin.dashboard') }}" class="hover:text-blue-200 font-semibold transition-colors">Дашборд</a>
@@ -20,7 +20,7 @@
                 </nav>
             </div>
             <div class="flex items-center gap-4">
-                <span class="hidden md:block text-blue-100 font-semibold">Админ: {{ session('user_name') }}</span>
+                <span class="hidden md:block text-blue-100 font-semibold">Админ: {{ auth()->user()->name ?? 'Администратор' }}</span>
                 <a href="{{ route('dashboard') }}" class="bg-white text-blue-600 px-4 py-2.5 rounded-xl font-bold hover:bg-blue-50 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
                     Клиентская часть
                 </a>
@@ -118,18 +118,22 @@
                     @foreach($recent_orders as $order)
                     <tr class="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-colors">
                         <td class="py-4 px-6 font-bold">#{{ $order->id }}</td>
-                        <td class="py-4 px-6 font-semibold">{{ $order->user->name }}</td>
+                        <td class="py-4 px-6 font-semibold">{{ $order->customer_name }}</td>
                         <td class="py-4 px-6">
                             <span class="px-3 py-1.5 rounded-xl text-xs font-bold shadow-md
-                                @if($order->status_id == 1) bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900
-                                @elseif($order->status_id == 5) bg-gradient-to-r from-green-400 to-green-500 text-green-900
-                                @elseif($order->status_id == 6) bg-gradient-to-r from-red-400 to-red-500 text-red-900
+                                @if($order->status == 'new') bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900
+                                @elseif($order->status == 'completed') bg-gradient-to-r from-green-400 to-green-500 text-green-900
+                                @elseif($order->status == 'cancelled') bg-gradient-to-r from-red-400 to-red-500 text-red-900
                                 @else bg-gradient-to-r from-blue-400 to-blue-500 text-blue-900 @endif">
-                                {{ $order->status->name }}
+                                @if($order->status == 'new') Новый
+                                @elseif($order->status == 'processing') В обработке
+                                @elseif($order->status == 'completed') Выполнен
+                                @elseif($order->status == 'cancelled') Отменен
+                                @else {{ $order->status }} @endif
                             </span>
                         </td>
-                        <td class="py-4 px-6 font-bold text-lg">{{ $order->total_price }} ₽</td>
-                        <td class="py-4 px-6 text-gray-600">{{ date('d.m.Y H:i', strtotime($order->created_at)) }}</td>
+                        <td class="py-4 px-6 font-bold text-lg">{{ number_format($order->total_amount, 2, '.', ' ') }} ₽</td>
+                        <td class="py-4 px-6 text-gray-600">{{ $order->created_at->format('d.m.Y H:i') }}</td>
                         <td class="py-4 px-6">
                             <a href="{{ route('admin.order.detail', $order->id) }}" 
                                class="text-blue-600 hover:text-blue-800 text-sm font-bold hover:underline transition-colors">

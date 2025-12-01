@@ -5,27 +5,26 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
-use App\Models\Status;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
-        if (!session('user_id') || session('user_role') != 1) {
+        // Проверка прав доступа (используем role вместо role_id)
+        $user = auth()->user();
+        if (!$user || !$user->isAdmin()) {
             return redirect()->route('login');
         }
 
         $stats = [
             'total_orders' => Order::count(),
-            'new_orders' => Order::where('status_id', 1)->count(),
-            'active_orders' => Order::whereIn('status_id', [2, 3, 4])->count(),
-            'completed_orders' => Order::where('status_id', 5)->count(),
-            'cancelled_orders' => Order::where('status_id', 6)->count(),
+            'new_orders' => Order::where('status', 'new')->count(),
+            'active_orders' => Order::whereIn('status', ['new', 'processing'])->count(),
             'total_users' => User::count()
         ];
 
-        $recent_orders = Order::with(['status', 'user'])
+        $recent_orders = Order::with(['user', 'items'])
                             ->orderBy('created_at', 'desc')
                             ->take(5)
                             ->get();
@@ -35,61 +34,86 @@ class AdminController extends Controller
 
     public function orders(Request $request)
     {
-    if (!session('user_id') || session('user_role') != 1) {
-        return redirect()->route('login');
-    }
+        $user = auth()->user();
+        if (!$user || !$user->isAdmin()) {
+            return redirect()->route('login');
+        }
 
-    $query = Order::with(['status', 'user', 'items.variant.product']);
+        $query = Order::with(['user', 'items.product']);
 
-    // Фильтрация по статусу
-    if ($request->has('status') && $request->status != 'all') {
-        $query->where('status_id', $request->status);
-    }
+        // Фильтрация по статусу
+        if ($request->has('status') && $request->status != 'all') {
+            $query->where('status', $request->status);
+        }
 
-    // Поиск по ID заказа или имени клиента
-    if ($request->has('search')) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->where('id', 'like', "%{$search}%")
-              ->orWhereHas('user', function($q) use ($search) {
-                  $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
-              });
-        });
-    }
+        // Поиск по ID заказа или имени клиента
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                  })
+                  ->orWhereJsonContains('customer_details->name', $search)
+                  ->orWhereJsonContains('customer_details->phone', $search);
+            });
+        }
 
-    $orders = $query->orderBy('created_at', 'desc')->get();
-    $statuses = Status::all();
+        $orders = $query->orderBy('created_at', 'desc')->get();
+        
+        // Статусы для фильтра
+        $statuses = [
+            'all' => 'Все',
+            'new' => 'Новые',
+            'processing' => 'В обработке',
+            'completed' => 'Выполненные',
+            'cancelled' => 'Отмененные'
+        ];
 
-    return view('admin.orders', compact('orders', 'statuses'));
+        return view('admin.orders', compact('orders', 'statuses'));
     }
 
     public function updateOrderStatus(Request $request, $orderId)
     {
-        if (!session('user_id') || session('user_role') != 1) {
+        $user = auth()->user();
+        if (!$user || !$user->isAdmin()) {
             return redirect()->route('login');
         }
 
         $request->validate([
-            'status_id' => 'required|integer|exists:Status,id'
+            'status' => 'required|in:new,processing,completed,cancelled'
         ]);
 
         $order = Order::findOrFail($orderId);
-        $oldStatus = $order->status->name;
-        $order->update(['status_id' => $request->status_id]);
+        $oldStatus = $this->getStatusLabel($order->status);
+        $order->update(['status' => $request->status]);
 
-        return back()->with('success', "Статус заказа #{$orderId} изменен с '{$oldStatus}' на '{$order->fresh()->status->name}'");
+        return back()->with('success', "Статус заказа #{$orderId} изменен с '{$oldStatus}' на '{$this->getStatusLabel($order->status)}'");
     }
 
     public function orderDetail($id)
     {
-    if (!session('user_id') || session('user_role') != 1) {
-        return redirect()->route('login');
+        $user = auth()->user();
+        if (!$user || !$user->isAdmin()) {
+            return redirect()->route('login');
+        }
+
+        $order = Order::with(['user', 'items.product'])
+                     ->findOrFail($id);
+
+        return view('admin.order-detail', compact('order'));
     }
-
-    $order = Order::with(['status', 'user', 'items.variant.product'])
-                 ->findOrFail($id);
-
-    return view('admin.order-detail', compact('order'));
+    
+    private function getStatusLabel($status)
+    {
+        $labels = [
+            'new' => 'Новый',
+            'processing' => 'В обработке',
+            'completed' => 'Выполнен',
+            'cancelled' => 'Отменен'
+        ];
+        
+        return $labels[$status] ?? $status;
     }
 }

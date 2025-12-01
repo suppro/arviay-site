@@ -2,15 +2,49 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Category extends Model
 {
-    protected $table = 'Category';
-    protected $fillable = ['name'];
-    public $timestamps = false;
+    protected $fillable = [
+        'parent_id',
+        'name',
+        'slug',
+        'description',
+    ];
     
     public function products()
     {
         return $this->hasMany(Product::class, 'category_id');
+    }
+    
+    // Родительская категория
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+    
+    // Подкатегории
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+    
+    // Автоматическое создание slug при сохранении
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($category) {
+            if (empty($category->slug)) {
+                $category->slug = Str::slug($category->name);
+            }
+        });
+        
+        static::updating(function ($category) {
+            if ($category->isDirty('name') && empty($category->slug)) {
+                $category->slug = Str::slug($category->name);
+            }
+        });
     }
 }

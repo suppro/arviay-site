@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -16,27 +16,20 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'login'    => 'required|string',
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        $user = \App\Models\User::where('login', $request->login)->first();
+        $credentials = $request->only('email', 'password');
+        $remember = $request->filled('remember');
 
-        if ($user && Hash::check($request->password, $user->password_hash)) {
+        if (Auth::attempt($credentials, $remember)) {
+            $request->session()->regenerate();
             
-            // Сохраняем все данные пользователя в сессию
-            session([
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'user_login' => $user->login,
-                'user_role' => $user->role_id,
-                'user_email' => $user->email,
-                'user_phone' => $user->phone,
-                'user_address' => $user->address
-            ]);
-
+            $user = Auth::user();
+            
             // Редирект в зависимости от роли
-            if ($user->role_id === 1) {
+            if ($user->isAdmin()) {
                 return redirect()->route('admin.dashboard');
             } else {
                 return redirect()->route('dashboard');
@@ -44,18 +37,17 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'login' => 'Неверный логин или пароль.',
-        ])->onlyInput('login');
+            'email' => 'Неверный email или пароль.',
+        ])->onlyInput('email');
     }
 
     public function logout(Request $request)
     {
-        session()->forget([
-            'user_id', 'user_name', 'user_login', 'user_role', 
-            'user_email', 'user_phone', 'user_address'
-        ]);
+        Auth::logout();
+        
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        
         return redirect('/');
     }
 }
